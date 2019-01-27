@@ -11,6 +11,7 @@
 #pragma once
 #include <algorithm>
 #include <initializer_list>
+#include <iostream>
 #include "err.h"
 
 /**
@@ -40,6 +41,16 @@ public:
   ~ndarray(void);
 
   // #### methods ####
+
+  /**
+   * @brief Overload stream output operator
+   * 
+   * @param out ostream object
+   * @param s array to output
+   * @return ostream& reference to the ostream object
+   */
+  template<class U>
+  friend std::ostream& operator<<(std::ostream& out, ndarray<U>& s);
 
   /**
    * @brief setup a new ndarray object
@@ -325,7 +336,7 @@ void ndarray<T>::reshape(initializer_list<int> list)
     n_dim = list.size();
     //delete shape
     delete[] shape;
-    new shape[n_dim];
+    shape=new int[n_dim];
   }
   
 #ifdef _DEBUG
@@ -344,4 +355,49 @@ void ndarray<T>::reshape(initializer_list<int> list)
   if (acc != len)
     Fatal_Error("Total number of element doesn't agree")
 #endif
+}
+
+//-------------friend---------------------
+//output
+template <typename U>
+ostream &operator<<(ostream &out, ndarray<U> &s)
+{
+  if (s.n_dim == 1) //1d output
+  {
+    for (int i = 0; i < s.shape[0]; i++)
+      out << setw(10) << s(i);
+    out << endl;
+  }
+  else if (s.n_dim == 2) //2d output
+  {
+    for (int i = 0; i < s.shape[0]; i++)
+    {
+      for (int j = 0; j < s.shape[1]; j++)
+      {
+        out << setw(10) << s({i, j});
+      }
+      out << endl;
+    }
+  }
+  else if (s.n_dim == 3) //3d output
+  {
+    for (int k = 0; k < s.shape[2]; k++)
+    {
+      out << "slice: (:,:," << k << ")" << endl;
+      for (int i = 0; i < s.shape[0]; i++)
+      {
+        for (int j = 0; j < s.shape[1]; j++)
+        {
+          out << setw(10) << s({i, j, k});
+        }
+        out << endl;
+      }
+    }
+  }
+  else
+  {
+    Fatal_Error("Output not supported")
+  }
+
+  return out;
 }
