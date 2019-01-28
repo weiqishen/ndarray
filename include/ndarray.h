@@ -28,11 +28,18 @@ public:
   ndarray(void);
 
   /**
-   * @brief Construct a new ndarray object
+   * @brief N-Dimension constructor
    * 
    * @param list A list to specify dimension of the ndarray
    */
   ndarray(std::initializer_list<int> list);
+
+  /**
+   * @brief 1-D constructor
+   * 
+   * @param nele number of element
+   */
+  ndarray(int nele);
 
   /// Copy constructor
   ndarray(const ndarray<T> &in_array);
@@ -59,6 +66,13 @@ public:
    */
   void setup(std::initializer_list<int> list);
 
+  /**
+   * @brief setup a new 1-D ndarray object
+   * 
+   * @param list A list to specify dimension of the ndarray
+   */
+  void setup(int nele);
+
   ///Assignment
   ndarray<T> &operator=(const ndarray<T> &in_array);
 
@@ -68,13 +82,13 @@ public:
   /// Access/set ndarray element
   T &operator()(std::initializer_list<int> list);
 
-  /// 1D access/set
+  /// 1-D access/set
   T &operator()(int idx);
 
   /// Return pointer of ndarray element
   T *get_ptr(std::initializer_list<int> list);
 
-  /// Return pointer of ndarray element in 1D
+  /// Return pointer of ndarray element in 1-D
   T *get_ptr(int idx = 0);
 
   /// Get number of elements along one axis
@@ -136,6 +150,19 @@ ndarray<T>::ndarray(initializer_list<int> list)
   for (auto l : list)
     shape[i++] = l;
 
+  calc_len();
+  data = new T[len];
+}
+
+// constructor 2
+
+template <typename T>
+ndarray<T>::ndarray(int nele)
+{
+  //store dimension array
+  n_dim = 1;
+  shape = new int[n_dim];
+  shape[0] = nele;
   calc_len();
   data = new T[len];
 }
@@ -217,6 +244,22 @@ void ndarray<T>::setup(initializer_list<int> list)
   data = new T[len];
 }
 
+//1-D setup
+template <typename T>
+void ndarray<T>::setup(int nele)
+{
+  //delete previous data
+  delete[] shape;
+  delete[] data;
+
+  //store dimension array
+  n_dim = 1;
+  shape = new int[n_dim];
+  shape[0]=nele;
+  calc_len();
+  data = new T[len];
+}
+
 template <typename T>
 T &ndarray<T>::operator()(int idx)
 {
@@ -231,7 +274,7 @@ T &ndarray<T>::operator()(initializer_list<int> list)
 
 #ifdef _DEBUG
   if (list.size() != n_dim)
-    Fatal_Error("Invalid dimension")
+    Fatal_Error("Invalid dimension");
 #endif
 
         for (auto l : list)
@@ -263,7 +306,7 @@ T *ndarray<T>::get_ptr(initializer_list<int> list)
 
 #ifdef _DEBUG
   if (list.size() != n_dim)
-    Fatal_Error("Invalid dimension")
+    Fatal_Error("Invalid dimension");
 #endif
 
         for (auto l : list)
@@ -287,7 +330,7 @@ int ndarray<T>::get_dim(int in_dim)
   if (in_dim < n_dim)
     return shape[in_dim];
   else
-    Fatal_Error("Dimension not supported")
+    Fatal_Error("Dimension not supported");
 }
 
 template <typename T>
@@ -353,7 +396,7 @@ void ndarray<T>::reshape(initializer_list<int> list)
 
 #ifdef _DEBUG
   if (acc != len)
-    Fatal_Error("Total number of element doesn't agree")
+    Fatal_Error("Total number of element doesn't agree");
 #endif
 }
 
@@ -362,7 +405,7 @@ void ndarray<T>::reshape(initializer_list<int> list)
 template <typename U>
 ostream &operator<<(ostream &out, ndarray<U> &s)
 {
-  if (s.n_dim == 1) //1d output
+  if (s.n_dim == 1) //1-D output
   {
     for (int i = 0; i < s.shape[0]; i++)
       out << setw(10) << s(i);
@@ -396,7 +439,7 @@ ostream &operator<<(ostream &out, ndarray<U> &s)
   }
   else
   {
-    Fatal_Error("Output not supported")
+    Fatal_Error("Output not supported");
   }
 
   return out;
