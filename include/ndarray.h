@@ -111,6 +111,9 @@ public:
   /// Reshape the array
   void reshape(std::initializer_list<size_t> list);
 
+  ///inplace transpose
+  void trans(void);
+
 protected:
   size_t *shape;
   T *data;
@@ -311,15 +314,11 @@ T *ndarray<T>::get_ptr(initializer_list<size_t> list)
     Fatal_Error("Invalid dimension");
 #endif
 
-        for (auto l : list)
-    {
-#ifdef _DEBUG
-      if (l >= shape[i])
-        Fatal_Error("Out of bound");
-#endif
-      idx += acc * l;
-      acc *= shape[i++];
-    }
+  for (auto l : list)
+  {
+    idx += acc * l;
+    acc *= shape[i++];
+  }
 
   return data + idx;
 }
@@ -400,6 +399,33 @@ void ndarray<T>::reshape(initializer_list<size_t> list)
   if (acc != len)
     Fatal_Error("Total number of element doesn't agree");
 #endif
+}
+
+template <typename T>
+void ndarray<T>::trans()
+{
+  if (n_dim == 2)
+  {
+    size_t c_s = shape[0];
+    size_t r_s = shape[1];
+
+    for (size_t k = 0; k < shape[0] * shape[1]; k++) //loop over the target array
+    {
+      size_t idx = k;
+      do
+      {
+        size_t id_0t = idx % r_s;
+        size_t id_1t = idx / r_s;
+        idx = id_0t * c_s + id_1t; //idx in original array
+      } while (idx < k);
+      swap(data[k], data[idx]);
+    }
+    swap(shape[0], shape[1]);
+  }
+  else
+  {
+    Fatal_Error("ERROR: Array transpose function only accepts a 2-dimensional square ndarray");
+  }
 }
 
 //-------------friend---------------------
