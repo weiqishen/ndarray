@@ -277,21 +277,15 @@ T &ndarray<T>::operator()(initializer_list<size_t> list)
   size_t idx = 0, acc = 1;
   size_t i = 0;
 
-#ifdef _DEBUG
-  if (list.size() != n_dim)
-    Fatal_Error("Invalid dimension");
-#endif
-
-        for (auto l : list)
+    for (auto l : list)
     {
-#ifdef _DEBUG
-      if (l >= shape[i])
-        Fatal_Error("Out of bound");
-#endif
       idx += acc * l;
       acc *= shape[i++];
     }
-
+#ifdef _DEBUG
+      if (idx >= len)
+        Fatal_Error("Out of bound");
+#endif
   return data[idx];
 }
 
@@ -308,11 +302,6 @@ T *ndarray<T>::get_ptr(initializer_list<size_t> list)
 {
   size_t idx = 0, acc = 1;
   size_t i = 0;
-
-#ifdef _DEBUG
-  if (list.size() != n_dim)
-    Fatal_Error("Invalid dimension");
-#endif
 
   for (auto l : list)
   {
@@ -436,7 +425,7 @@ ostream &operator<<(ostream &out, ndarray<U> &s)
   if (s.n_dim == 1) //1-D output
   {
     for (size_t i = 0; i < s.shape[0]; i++)
-      out << setw(10) << s(i);
+      out << setprecision(4) << setw(10) << s(i);
     out << endl;
   }
   else if (s.n_dim == 2) //2d output
@@ -445,7 +434,7 @@ ostream &operator<<(ostream &out, ndarray<U> &s)
     {
       for (size_t j = 0; j < s.shape[1]; j++)
       {
-        out << setw(10) << s({i, j});
+        out << setprecision(4) << setw(10) << s({i, j});
       }
       out << endl;
     }
@@ -459,7 +448,7 @@ ostream &operator<<(ostream &out, ndarray<U> &s)
       {
         for (size_t j = 0; j < s.shape[1]; j++)
         {
-          out << setw(10) << s({i, j, k});
+          out << setprecision(4) << setw(10) << s({i, j, k});
         }
         out << endl;
       }
