@@ -301,13 +301,8 @@ T &ndarray<T>::operator()(std::initializer_list<size_t> list)
 template <typename T>
 T *ndarray<T>::GetData(size_t idx)
 {
-#ifdef _DEBUG
   if (idx >= m_length)
-  {
-    std::cout << "Error: ndarray out of bound" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-#endif
+    return nullptr;
   return p_data + idx;
 }
 
@@ -322,13 +317,9 @@ T *ndarray<T>::GetData(std::initializer_list<size_t> list)
     idx += acc * l;
     acc *= p_shape[i++];
   }
-#ifdef _DEBUG
   if (idx >= m_length)
-  {
-    std::cout << "Error: ndarray out of bound" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-#endif
+    return nullptr;
+
   return p_data + idx;
 }
 

@@ -26,7 +26,7 @@ Some major usage of ndarray are listed below:
 2. Use setup to create a new array
 
     ```c++
-    a.setup({0,0,1});
+    a.Setup({0,0,1});
     ```
 
 3. Initialize array elements to value
