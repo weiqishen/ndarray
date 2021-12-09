@@ -2,11 +2,11 @@
  * @file ndarray.h
  * @brief A simple N-dimensional array in Column Major
  * @author Weiqi Shen weiqishen1994@ufl.edu
- * @version 0.1
- * @date 2019-01-26
- * 
- * @copyright Copyright (c) 2019
- * 
+ * @version 0.2
+ * @date 2021-12-9
+ *
+ * @copyright Copyright (c) 2021
+ *
  */
 
 #pragma once
@@ -14,7 +14,6 @@
 #include <initializer_list>
 #include <iostream>
 #include <iomanip>
-#include "err.h"
 
 /**
  * @brief A simple N-dimensional array in Column Major
@@ -32,20 +31,20 @@ public:
 
   /**
    * @brief N-Dimension constructor
-   * 
+   *
    * @param list A list to specify dimension of the ndarray
    */
   ndarray(std::initializer_list<size_t> list);
 
   /**
    * @brief 1-D constructor
-   * 
-   * @param nele number of element
+   *
+   * @param size number of element
    */
-  ndarray(size_t nele);
+  ndarray(size_t size);
 
   /// Copy constructor
-  ndarray(const ndarray<T> &in_array);
+  ndarray(const ndarray<T> &rhs);
 
   /// destructor
   ~ndarray(void);
@@ -54,33 +53,33 @@ public:
 
   /**
    * @brief Overload stream output operator
-   * 
+   *
    * @param out ostream object
    * @param s array to output
    * @return ostream& reference to the ostream object
    */
-  template<class U>
-  friend std::ostream& operator<<(std::ostream& out, ndarray<U>& s);
+  template <class U>
+  friend std::ostream &operator<<(std::ostream &out, ndarray<U> &s);
 
   /**
-   * @brief setup a new ndarray object
-   * 
+   * @brief Setup a new ndarray object
+   *
    * @param list A list to specify dimension of the ndarray
    */
-  void setup(std::initializer_list<size_t> list);
+  void Setup(std::initializer_list<size_t> list);
 
   /**
-   * @brief setup a new 1-D ndarray object
-   * 
+   * @brief Setup a new 1-D ndarray object
+   *
    * @param list A list to specify dimension of the ndarray
    */
-  void setup(size_t nele);
+  void Setup(size_t size);
 
-  ///Assignment
-  ndarray<T> &operator=(const ndarray<T> &in_array);
+  /// Assignment
+  ndarray<T> &operator=(const ndarray<T> &rhs);
 
-  ///fill with value
-  ndarray<T> &operator=(const T &other);
+  /// fill with value
+  ndarray<T> &operator=(const T &val);
 
   /// Access/set ndarray element
   T &operator()(std::initializer_list<size_t> list);
@@ -89,46 +88,42 @@ public:
   T &operator()(size_t idx);
 
   /// Return pointer of ndarray element
-  T *get_ptr(std::initializer_list<size_t> list);
+  T *GetData(std::initializer_list<size_t> list);
 
   /// Return pointer of ndarray element in 1-D
-  T *get_ptr(size_t idx = 0);
+  T *GetData(size_t idx = 0);
 
   /// Get number of elements along one axis
-  size_t get_dim(size_t in_dim);
+  size_t GetDim(size_t n);
 
   /// Get number of dimension of the ndarray
-  size_t get_n_dim(void);
+  size_t GetNumDim(void);
 
-  ///get the length of the ndarray
-  size_t get_len(void);
+  /// get the length of the ndarray
+  size_t GetLength(void);
 
   /// Method to get maximum value of ndarray
-  T get_max(void);
+  T GetMax(void);
 
   /// Method to get minimum value of ndarray
-  T get_min(void);
+  T GetMin(void);
 
   /// Reshape the array
-  void reshape(std::initializer_list<size_t> list);
+  void Reshape(std::initializer_list<size_t> list);
 
-  ///inplace transpose
-  void trans(void);
+  /// Get the index of each dimension given the 1-D index
+  void GetIndex(size_t idx, ndarray<size_t> &out_idx);
 
 protected:
-  size_t *shape;
-  T *data;
-  size_t n_dim;
-  size_t len;
+  size_t *p_shape;
+  T *p_data;
+  size_t m_nDim;
+  size_t m_length;
 
 private:
   /// helper method to calculate length of ndarray
-  void calc_len(void);
+  void CalcLength(void);
 };
-
-// definitions
-
-using namespace std;
 
 // #### constructors ####
 
@@ -137,86 +132,86 @@ using namespace std;
 template <typename T>
 ndarray<T>::ndarray()
 {
-  len = 0;
-  n_dim = 0;
-  shape = NULL;
-  data = NULL;
+  m_length = 0;
+  m_nDim = 0;
+  p_shape = NULL;
+  p_data = NULL;
 }
 
 // constructor 1
 
 template <typename T>
-ndarray<T>::ndarray(initializer_list<size_t> list)
+ndarray<T>::ndarray(std::initializer_list<size_t> list)
 {
-  //store dimension array
-  n_dim = list.size();
-  shape = new size_t[n_dim];
+  // store dimension array
+  m_nDim = list.size();
+  p_shape = new size_t[m_nDim];
 
   size_t i = 0;
   for (auto l : list)
-    shape[i++] = l;
+    p_shape[i++] = l;
 
-  calc_len();
-  data = new T[len];
+  CalcLength();
+  p_data = new T[m_length];
 }
 
 // constructor 2
 
 template <typename T>
-ndarray<T>::ndarray(size_t nele)
+ndarray<T>::ndarray(size_t size)
 {
-  //store dimension array
-  n_dim = 1;
-  shape = new size_t[n_dim];
-  shape[0] = nele;
-  calc_len();
-  data = new T[len];
+  // store dimension array
+  m_nDim = 1;
+  p_shape = new size_t[m_nDim];
+  p_shape[0] = size;
+  CalcLength();
+  p_data = new T[m_length];
 }
 
 // copy constructor
 
 template <typename T>
-ndarray<T>::ndarray(const ndarray<T> &in_array)
+ndarray<T>::ndarray(const ndarray<T> &rhs)
 {
-  n_dim = in_array.n_dim;
-  shape = new size_t[n_dim];
-  copy(in_array.shape, in_array.shape + n_dim, this->shape);
+  m_nDim = rhs.m_nDim;
+  p_shape = new size_t[m_nDim];
+  std::copy(rhs.p_shape, rhs.p_shape + m_nDim, this->p_shape);
 
-  calc_len();
-  data = new T[len];
-  copy(in_array.data, in_array.data + len, this->data);
+  CalcLength();
+  p_data = new T[m_length];
+  std::copy(rhs.p_data, rhs.p_data + m_length, this->p_data);
 }
 
 // assignment
 
 template <typename T>
-ndarray<T> &ndarray<T>::operator=(const ndarray<T> &in_array)
+ndarray<T> &ndarray<T>::operator=(const ndarray<T> &rhs)
 {
 
-  if (this == &in_array)
+  if (this == &rhs)
   {
     return (*this);
   }
   else
   {
-    delete[] data;
-    delete[] shape;
+    delete[] p_data;
+    delete[] p_shape;
 
-    n_dim = in_array.n_dim;
-    shape = new size_t[n_dim];
-    copy(in_array.shape, in_array.shape + n_dim, this->shape);
+    m_nDim = rhs.m_nDim;
+    p_shape = new size_t[m_nDim];
+    std::copy(rhs.p_shape, rhs.p_shape + m_nDim, this->p_shape);
 
-    calc_len();
-    data = new T[len];
-    copy(in_array.data, in_array.data + len, this->data);
+    CalcLength();
+    p_data = new T[m_length];
+    std::copy(rhs.p_data, rhs.p_data + m_length, this->p_data);
     return (*this);
   }
 }
 
 template <typename T>
-ndarray<T> &ndarray<T>::operator=(const T &other)
+ndarray<T> &ndarray<T>::operator=(const T &val)
 {
-  fill_n(this->data, len, other);
+  fill_n(this->p_data, m_length, val);
   return *this;
 }
 // destructor
@@ -224,83 +219,64 @@ ndarray<T> &ndarray<T>::operator=(const T &other)
 template <typename T>
 ndarray<T>::~ndarray()
 {
-  delete[] data;
-  delete[] shape;
+  delete[] p_data;
+  delete[] p_shape;
 }
 
 // #### methods ####
 
-// setup
+// Setup
 
 template <typename T>
-void ndarray<T>::setup(initializer_list<size_t> list)
+void ndarray<T>::Setup(std::initializer_list<size_t> list)
 {
-  //delete previous data
-  delete[] shape;
-  delete[] data;
+  // delete previous p_data
+  delete[] p_shape;
+  delete[] p_data;
 
-  //store dimension array
-  n_dim = list.size();
-  shape = new size_t[n_dim];
+  // store dimension array
+  m_nDim = list.size();
+  p_shape = new size_t[m_nDim];
 
   size_t i = 0;
   for (auto l : list)
-    shape[i++] = l;
+    p_shape[i++] = l;
 
-  calc_len();
-  data = new T[len];
+  CalcLength();
+  p_data = new T[m_length];
 }
 
-//1-D setup
+// 1-D Setup
 template <typename T>
-void ndarray<T>::setup(size_t nele)
+void ndarray<T>::Setup(size_t size)
 {
-  //delete previous data
-  delete[] shape;
-  delete[] data;
+  // delete previous p_data
+  delete[] p_shape;
+  delete[] p_data;
 
-  //store dimension array
-  n_dim = 1;
-  shape = new size_t[n_dim];
-  shape[0]=nele;
-  calc_len();
-  data = new T[len];
+  // store dimension array
+  m_nDim = 1;
+  p_shape = new size_t[m_nDim];
+  p_shape[0] = size;
+  CalcLength();
+  p_data = new T[m_length];
 }
 
 template <typename T>
 T &ndarray<T>::operator()(size_t idx)
 {
-  return data[idx];
-}
-
-template <typename T>
-T &ndarray<T>::operator()(initializer_list<size_t> list)
-{
-  size_t idx = 0, acc = 1;
-  size_t i = 0;
-
-    for (auto l : list)
-    {
-      idx += acc * l;
-      acc *= shape[i++];
-    }
 #ifdef _DEBUG
-      if (idx >= len)
-        Fatal_Error("Out of bound");
+  if (idx >= m_length)
+  {
+    std::cout << "Error: ndarray out of bound" << std::endl;
+    exit(EXIT_FAILURE);
+  }
 #endif
-  return data[idx];
-}
-
-// return pointer
-
-template <typename T>
-T *ndarray<T>::get_ptr(size_t idx)
-{
-  return data + idx;
+  return p_data[idx];
 }
 
 template <typename T>
-T *ndarray<T>::get_ptr(initializer_list<size_t> list)
+T &ndarray<T>::operator()(std::initializer_list<size_t> list)
 {
   size_t idx = 0, acc = 1;
   size_t i = 0;
@@ -308,72 +284,126 @@ T *ndarray<T>::get_ptr(initializer_list<size_t> list)
   for (auto l : list)
   {
     idx += acc * l;
-    acc *= shape[i++];
+    acc *= p_shape[i++];
   }
+#ifdef _DEBUG
+  if (idx >= m_length)
+  {
+    std::cout << "Error: ndarray out of bound" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+#endif
+  return p_data[idx];
+}
 
-  return data + idx;
+// return pointer
+
+template <typename T>
+T *ndarray<T>::GetData(size_t idx)
+{
+#ifdef _DEBUG
+  if (idx >= m_length)
+  {
+    std::cout << "Error: ndarray out of bound" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+#endif
+  return p_data + idx;
+}
+
+template <typename T>
+T *ndarray<T>::GetData(std::initializer_list<size_t> list)
+{
+  size_t idx = 0, acc = 1;
+  size_t i = 0;
+
+  for (auto l : list)
+  {
+    idx += acc * l;
+    acc *= p_shape[i++];
+  }
+#ifdef _DEBUG
+  if (idx >= m_length)
+  {
+    std::cout << "Error: ndarray out of bound" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+#endif
+  return p_data + idx;
 }
 
 // obtain dimension
 
 template <typename T>
-size_t ndarray<T>::get_dim(size_t in_dim)
+size_t ndarray<T>::GetDim(size_t n)
 {
-  if (in_dim < n_dim)
-    return shape[in_dim];
+  if (n < m_nDim)
+    return p_shape[n];
   else
-    Fatal_Error("Dimension not supported");
+    return 0;
 }
 
 template <typename T>
-size_t ndarray<T>::get_n_dim()
+void ndarray<T>::GetIndex(size_t idx, ndarray<size_t> &out_idx)
 {
-  return n_dim;
+  size_t dim_bf = 1;
+  for (size_t i = 0; i < m_nDim; i++)
+  {
+    out_idx(i) = idx / dim_bf;
+    dim_bf *= p_shape[i];
+    out_idx(i) = out_idx(i) % p_shape[i];
+  }
 }
 
 template <typename T>
-void ndarray<T>::calc_len(void)
+size_t ndarray<T>::GetNumDim()
 {
-  len = 1;
-  for (size_t i = 0; i < n_dim; i++)
-    len *= shape[i];
+  return m_nDim;
 }
 
 template <typename T>
-size_t ndarray<T>::get_len(void)
+void ndarray<T>::CalcLength(void)
 {
-  return len;
+  m_length = 1;
+  for (size_t i = 0; i < m_nDim; i++)
+    m_length *= p_shape[i];
+}
+
+template <typename T>
+size_t ndarray<T>::GetLength(void)
+{
+  return m_length;
 }
 // method to calculate maximum value of ndarray
 // Template specialization
 template <typename T>
-T ndarray<T>::get_max(void)
+T ndarray<T>::GetMax(void)
 {
-  return *max_element(data, data + len);
+  return *std::max_element(p_data, p_data + m_length);
 }
 
 // method to calculate minimum value of ndarray
 // Template specialization
 template <typename T>
-T ndarray<T>::get_min(void)
+T ndarray<T>::GetMin(void)
 {
-  return *min_element(data, data + len);
+  return *std::min_element(p_data, p_data + m_length);
 }
 
 template <typename T>
-void ndarray<T>::reshape(initializer_list<size_t> list)
+void ndarray<T>::Reshape(std::initializer_list<size_t> list)
 {
 
   size_t i = 0;
 
-  if (n_dim != list.size())
+  if (m_nDim != list.size())
   {
-    n_dim = list.size();
-    //delete shape
-    delete[] shape;
-    shape=new size_t[n_dim];
+    m_nDim = list.size();
+    // delete p_shape
+    delete[] p_shape;
+    p_shape = new size_t[m_nDim];
   }
-  
+
 #ifdef _DEBUG
   size_t acc = 1;
 #endif
@@ -383,82 +413,59 @@ void ndarray<T>::reshape(initializer_list<size_t> list)
 #ifdef _DEBUG
     acc *= l;
 #endif
-    shape[i++] = l;
+    p_shape[i++] = l;
   }
 
 #ifdef _DEBUG
-  if (acc != len)
-    Fatal_Error("Total number of element doesn't agree");
+  if (acc != m_length)
+  {
+    std::cout << "ERROR: Total number of element doesn't agree" << endl;
+    exit(EXIT_FAILURE);
+  }
 #endif
 }
 
-template <typename T>
-void ndarray<T>::trans()
-{
-  if (n_dim == 2)
-  {
-    size_t c_s = shape[0];
-    size_t r_s = shape[1];
-
-    for (size_t k = 0; k < shape[0] * shape[1]; k++) //loop over the target array
-    {
-      size_t idx = k;
-      do
-      {
-        size_t id_0t = idx % r_s;
-        size_t id_1t = idx / r_s;
-        idx = id_0t * c_s + id_1t; //idx in original array
-      } while (idx < k);
-      swap(data[k], data[idx]);
-    }
-    swap(shape[0], shape[1]);
-  }
-  else
-  {
-    Fatal_Error("ERROR: Array transpose function only accepts a 2-dimensional square ndarray");
-  }
-}
-
 //-------------friend---------------------
-//output
+// output
 template <typename U>
-ostream &operator<<(ostream &out, ndarray<U> &s)
+std::ostream &operator<<(std::ostream &out, ndarray<U> &s)
 {
-  if (s.n_dim == 1) //1-D output
+  if (s.m_nDim == 1) // 1-D output
   {
-    for (size_t i = 0; i < s.shape[0]; i++)
-      out << setprecision(4) << setw(10) << s(i);
-    out << endl;
+    for (size_t i = 0; i < s.p_shape[0]; i++)
+      out << std::setprecision(4) << std::setw(10) << s(i);
+    out << std::endl;
   }
-  else if (s.n_dim == 2) //2d output
+  else if (s.m_nDim == 2) // 2d output
   {
-    for (size_t i = 0; i < s.shape[0]; i++)
+    for (size_t i = 0; i < s.p_shape[0]; i++)
     {
-      for (size_t j = 0; j < s.shape[1]; j++)
+      for (size_t j = 0; j < s.p_shape[1]; j++)
       {
-        out << setprecision(4) << setw(10) << s({i, j});
+        out << std::setprecision(4) << std::setw(10) << s({i, j});
       }
-      out << endl;
+      out << std::endl;
     }
   }
-  else if (s.n_dim == 3) //3d output
+  else if (s.m_nDim == 3) // 3d output
   {
-    for (size_t k = 0; k < s.shape[2]; k++)
+    for (size_t k = 0; k < s.p_shape[2]; k++)
     {
-      out << "slice: (:,:," << k << ")" << endl;
-      for (size_t i = 0; i < s.shape[0]; i++)
+      out << "slice: (:,:," << k << ")" << std::endl;
+      for (size_t i = 0; i < s.p_shape[0]; i++)
       {
-        for (size_t j = 0; j < s.shape[1]; j++)
+        for (size_t j = 0; j < s.p_shape[1]; j++)
         {
-          out << setprecision(4) << setw(10) << s({i, j, k});
+          out << std::setprecision(4) << std::setw(10) << s({i, j, k});
         }
-        out << endl;
+        out << std::endl;
       }
     }
   }
   else
   {
-    Fatal_Error("Output not supported");
+    std::cout << "ERROR: Output not supported" << std::endl;
+    exit(EXIT_FAILURE);
   }
 
   return out;

@@ -45,14 +45,14 @@ Some major usage of ndarray are listed below:
 5. Get pointer of array element
 
     ```c++
-    a.get_ptr({0,0,1}); //get pointer using initializer_list
-    a.get_ptr(1); //get pointer as if the array is 1D array
+    a.GetData({0,0,1}); //get pointer using initializer_list
+    a.GetData(1); //get pointer as if the array is 1D array
     ```
 
 6. Reshape array
 
     ```c++
-    a.reshape({1,4,2}); //reshape using initializer_list
+    a.Reshape({1,4,2}); //reshape using initializer_list
     ```
 
 ## License
