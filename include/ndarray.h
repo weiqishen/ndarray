@@ -88,31 +88,31 @@ public:
   T &operator()(size_t idx);
 
   /// Return pointer of ndarray element
-  T *GetData(std::initializer_list<size_t> list);
+  T *GetData(std::initializer_list<size_t> list) const;
 
   /// Return pointer of ndarray element in 1-D
-  T *GetData(size_t idx = 0);
+  T *GetData(size_t idx = 0) const;
 
   /// Get number of elements along one axis
-  size_t GetDim(size_t n);
+  size_t GetDim(size_t n) const;
 
   /// Get number of dimension of the ndarray
-  size_t GetNumDim(void);
+  size_t GetNumDim(void) const;
 
   /// get the length of the ndarray
-  size_t GetLength(void);
+  size_t GetLength(void) const;
 
   /// Method to get maximum value of ndarray
-  T GetMax(void);
+  T GetMax(void) const;
 
   /// Method to get minimum value of ndarray
-  T GetMin(void);
+  T GetMin(void) const;
 
   /// Reshape the array
   void Reshape(std::initializer_list<size_t> list);
 
   /// Get the index of each dimension given the 1-D index
-  void GetIndex(size_t idx, ndarray<size_t> &out_idx);
+  void GetIndex(size_t idx, ndarray<size_t> &out_idx) const;
 
 protected:
   size_t *p_shape;
@@ -299,7 +299,7 @@ T &ndarray<T>::operator()(std::initializer_list<size_t> list)
 // return pointer
 
 template <typename T>
-T *ndarray<T>::GetData(size_t idx)
+T *ndarray<T>::GetData(size_t idx) const
 {
   if (idx >= m_length)
     return nullptr;
@@ -307,7 +307,7 @@ T *ndarray<T>::GetData(size_t idx)
 }
 
 template <typename T>
-T *ndarray<T>::GetData(std::initializer_list<size_t> list)
+T *ndarray<T>::GetData(std::initializer_list<size_t> list) const
 {
   size_t idx = 0, acc = 1;
   size_t i = 0;
@@ -326,7 +326,7 @@ T *ndarray<T>::GetData(std::initializer_list<size_t> list)
 // obtain dimension
 
 template <typename T>
-size_t ndarray<T>::GetDim(size_t n)
+size_t ndarray<T>::GetDim(size_t n) const
 {
   if (n < m_nDim)
     return p_shape[n];
@@ -335,7 +335,7 @@ size_t ndarray<T>::GetDim(size_t n)
 }
 
 template <typename T>
-void ndarray<T>::GetIndex(size_t idx, ndarray<size_t> &out_idx)
+void ndarray<T>::GetIndex(size_t idx, ndarray<size_t> &out_idx) const
 {
   size_t dim_bf = 1;
   for (size_t i = 0; i < m_nDim; i++)
@@ -347,7 +347,7 @@ void ndarray<T>::GetIndex(size_t idx, ndarray<size_t> &out_idx)
 }
 
 template <typename T>
-size_t ndarray<T>::GetNumDim()
+size_t ndarray<T>::GetNumDim() const
 {
   return m_nDim;
 }
@@ -361,14 +361,14 @@ void ndarray<T>::CalcLength(void)
 }
 
 template <typename T>
-size_t ndarray<T>::GetLength(void)
+size_t ndarray<T>::GetLength(void) const
 {
   return m_length;
 }
 // method to calculate maximum value of ndarray
 // Template specialization
 template <typename T>
-T ndarray<T>::GetMax(void)
+T ndarray<T>::GetMax(void) const
 {
   return *std::max_element(p_data, p_data + m_length);
 }
@@ -376,7 +376,7 @@ T ndarray<T>::GetMax(void)
 // method to calculate minimum value of ndarray
 // Template specialization
 template <typename T>
-T ndarray<T>::GetMin(void)
+T ndarray<T>::GetMin(void) const
 {
   return *std::min_element(p_data, p_data + m_length);
 }
