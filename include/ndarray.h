@@ -82,10 +82,10 @@ public:
   ndarray<T> &operator=(const T &val);
 
   /// Access/set ndarray element
-  T &operator()(std::initializer_list<size_t> list);
+  T &operator()(std::initializer_list<size_t> list) const;
 
   /// 1-D access/set
-  T &operator()(size_t idx);
+  T &operator()(size_t idx) const;
 
   /// Return pointer of ndarray element
   T *GetData(std::initializer_list<size_t> list) const;
@@ -263,7 +263,7 @@ void ndarray<T>::Setup(size_t size)
 }
 
 template <typename T>
-T &ndarray<T>::operator()(size_t idx)
+T &ndarray<T>::operator()(size_t idx) const
 {
 #ifdef _DEBUG
   if (idx >= m_length)
@@ -276,7 +276,7 @@ T &ndarray<T>::operator()(size_t idx)
 }
 
 template <typename T>
-T &ndarray<T>::operator()(std::initializer_list<size_t> list)
+T &ndarray<T>::operator()(std::initializer_list<size_t> list) const
 {
   size_t idx = 0, acc = 1;
   size_t i = 0;
